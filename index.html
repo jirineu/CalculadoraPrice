@@ -19,11 +19,11 @@
             background-color: #f7f7fa;
             color: #333;
             padding-top: 55px; 
-            overflow-x: hidden; 
+            overflow-x: hidden; /* PRINCIPAL: Garante que a página não tenha scroll horizontal */
         }
         
         #main-content {
-            padding: 8px;
+            padding: 10px; 
             overflow-y: auto; 
             transition: margin-left 0.3s;
         }
@@ -59,9 +59,7 @@
             line-height: 1;
         }
 
-        /* ------------------------------------------------------------------ */
         /* --- 2. MENU LATERAL (Sidebar) --- */
-        /* ------------------------------------------------------------------ */
         #sidebar-menu {
             height: 100%; 
             width: 85vw; 
@@ -96,12 +94,15 @@
             box-shadow: 0 2px 8px rgba(0, 0, 0, 0.1);
             margin-bottom: 15px;
             display: grid;
-            /* Grid com 2 colunas */
-            grid-template-columns: 1fr 1fr; 
+            grid-template-columns: 1fr; 
             gap: 10px;
             align-items: end;
         }
         
+        .toggle-section, #formulario > button, .edicao-titulo {
+             grid-column: 1 / -1; 
+        }
+
         .campo {
             display: flex;
             flex-direction: column;
@@ -110,14 +111,14 @@
         label {
             margin-bottom: 3px;
             font-weight: bold;
-            font-size: 0.8em; 
+            font-size: 0.9em; 
             color: #555;
         }
         input, select, button {
-            padding: 8px; 
+            padding: 10px; 
             border: 1px solid #ced4da;
             border-radius: 4px;
-            font-size: 0.9em;
+            font-size: 1em; 
             max-width: 100%; 
         }
         button {
@@ -127,42 +128,27 @@
             cursor: pointer;
             font-weight: bold;
             transition: background-color 0.3s;
-            margin-top: 15px; 
+            margin-top: 10px; 
         }
         
-        /* Botões principais no formulário */
         #btn-simular-principal { background-color: #007bff; margin-top: 15px; }
         
-        /* Contêiner de botões de Amortização/Ponto de Partida */
-        .toggle-section {
-            /* Ocupa toda a largura, mas o botão dentro será menor */
-            grid-column: 1 / -1; 
-            margin-top: 10px;
-        }
-        
-        /* Estilo para botões de abrir/fechar configurações (ALTERADO) */
         .toggle-button { 
-            margin-top: 0; 
+            margin-top: 5px; 
             background-color: #6c757d; 
-            /* Removido width: 100% e display: block */
-            /* DEIXA O BOTÃO MENOR E COMPACTO */
-            padding: 5px 10px; /* Padding reduzido */
-            font-size: 0.85em; /* Fonte reduzida */
-            display: inline-block;
-            width: auto;
+            padding: 10px; 
+            font-size: 0.9em; 
+            display: block; 
+            width: 100%;
         }
         
-        /* Cor de destaque para Amortização Única */
         #btn-abrir-amortizacao-unica {
              background-color: #28a745; 
         }
-        
-        /* Altera o grid-column para os botões que precisam da largura total */
-        #formulario > button { grid-column: 1 / -1; margin-top: 5px; }
 
         #edicao-saldo-campos {
             display: none; 
-            grid-template-columns: 1fr 1fr; 
+            grid-template-columns: 1fr; 
             gap: 10px;
             padding: 15px;
             border: 1px solid #d9534f;
@@ -171,10 +157,7 @@
             margin-top: 10px;
         }
 
-
-        /* ------------------------------------------------------------------ */
         /* --- CONTAINER DE AMORTIZAÇÃO ÚNICA E RECORRENTE --- */
-        /* ------------------------------------------------------------------ */
         #amortizacao-unica-container, #amortizacao-recorrente-container {
             background-color: #f0f8ff;
             border: 1px solid #007bff;
@@ -185,7 +168,7 @@
         }
         #amortizacao-unica-opcoes, #amortizacao-recorrente-opcoes {
             display: grid;
-            grid-template-columns: 1fr 1fr; 
+            grid-template-columns: 1fr; 
             gap: 10px;
         }
 
@@ -196,7 +179,7 @@
         .campo-variado { display: none; }
 
 
-        /* --- DASHBOARD E TABELA --- */
+        /* --- DASHBOARD --- */
         #dashboard-resumo {
             background-color: #e6f7ff; 
             border: 2px solid #007bff;
@@ -217,44 +200,56 @@
             font-size: 0.8em;
         }
         .dashboard-valor {
-            font-size: 1.3em; 
+            font-size: 1.4em; 
             color: #d9534f;
             display: block;
             margin-top: 5px;
         }
         
-        /* ------------------------------------------------------------------ */
-        /* Tabela: Removido sticky TH */
-        /* ------------------------------------------------------------------ */
+        /* --- TABELA (COMPACTADA) --- */
         .tabela-wrapper {
-             overflow-x: auto; 
+             /* NOVO: Remove scroll horizontal */
+             overflow-x: hidden; 
              margin-bottom: 20px;
              border-radius: 8px;
         }
         table {
-            min-width: 550px; 
+            min-width: 100%; 
             width: 100%;
             border-collapse: collapse;
             background-color: #ffffff;
             box-shadow: 0 4px 10px rgba(0, 0, 0, 0.05);
-            font-size: 0.75em; 
+            font-size: 0.8em; 
             z-index: 1; 
+            table-layout: fixed; /* NOVO: Força a tabela a caber no width: 100% */
         }
         
         th, td {
-            padding: 6px 4px; 
+            padding: 8px 3px; /* Reduzido para compactar mais */
             text-align: right;
             border-bottom: 1px solid #e0e0e0;
+            word-wrap: break-word; /* Ajuda a quebrar números grandes */
         }
         
         th {
             background-color: #004d99;
             color: white;
+            font-size: 0.75em; /* Reduzido ligeiramente a fonte do cabeçalho */
+        }
+
+        /* NOVO: Definição de Largura para 5 Colunas */
+        th:nth-child(1), td:nth-child(1) { width: 15%; } /* Mês */
+        th:nth-child(2), td:nth-child(2) { width: 25%; } /* Paga Total */
+        th:nth-child(3), td:nth-child(3) { width: 20%; } /* Juros */
+        th:nth-child(4), td:nth-child(4) { width: 20%; } /* Amort. Efetiva (Normal + Extra) */
+        th:nth-child(5), td:nth-child(5) { width: 20%; } /* Saldo Devedor */
+        
+        .amortizacao-extra-mes td {
+            background-color: #e8f5e9; 
+            font-weight: bold;
         }
         
-        /* ---------------------------------------------------- */
         /* MODAL DE ALERTA */
-        /* ---------------------------------------------------- */
         #customAlert {
             display: none;
             position: fixed;
@@ -278,7 +273,6 @@
             text-align: center;
             box-shadow: 0 5px 15px rgba(0,0,0,0.3);
         }
-        /* Mensagem discreta de economia */
         #economia-parcelas-msg {
             background-color: #e9ecef;
             padding: 10px;
@@ -299,7 +293,6 @@
     </div>
 
     <aside id="sidebar-menu">
-        <span class="sidebar-close-btn" onclick="toggleSidebar()">×</span>
         <div class="menu-content-wrapper">
              <button id="btn-abrir-recorrente" onclick="toggleAmortizacao('recorrente', true); toggleSidebar();">
                 Config. "Mês a Mês" (Recorrente)
@@ -483,8 +476,6 @@
                         <th>Mês</th>
                         <th>Paga Total</th>
                         <th>Juros</th>
-                        <th>Amort. Normal</th>
-                        <th>Custo Op.</th>
                         <th>Amort. Efetiva</th>
                         <th>Saldo Devedor</th>
                     </tr>
@@ -529,7 +520,6 @@
             const sidebar = document.getElementById('sidebar-menu');
             sidebar.classList.toggle('open');
             
-            // Lógica ajustada para garantir que o sidebar use VW na abertura/fechamento
             if (sidebar.classList.contains('open')) {
                  sidebar.style.left = '0';
             } else {
@@ -798,8 +788,7 @@
                 let amortizacaoNormal = PMT_do_mes - jurosDoMes;
 
                 let amortizacaoBrutaMes = 0;
-                let custoOpExibicao = 0;
-                let amortizacaoEfetivaExibicao = 0;
+                let amortizacaoEfetivaExibicao = 0; // Amortização EXTRA Efetiva
                 let parcelaTotalPaga = PMT_do_mes;
                 let linhaDestaque = false;
                 
@@ -855,7 +844,6 @@
                     saldoDevedorLoop = novo_sd;
                     
                     // 5. Prepara os valores de exibição
-                    custoOpExibicao = custoOperacionalMes;
                     amortizacaoEfetivaExibicao = amortizacaoEfetivaMes;
                     parcelaTotalPaga = PMT_do_mes + amortizacaoBrutaMes;
                     linhaDestaque = true;
@@ -888,24 +876,26 @@
                     if(nParcelasFinal === nParcelasPartida) nParcelasFinal = mes;
                 }
 
+                
+                // NOVO: Amortização Total para a coluna compactada
+                let amortizacaoTotalDoMes = amortizacaoNormal + amortizacaoEfetivaExibicao;
 
-                // 6. Geração da Linha da Tabela
+                // 6. Geração da Linha da Tabela (5 Colunas)
                 const novaLinha = corpoTabela.insertRow();
                 if (linhaDestaque) novaLinha.classList.add('amortizacao-extra-mes');
 
-                novaLinha.insertCell().textContent = mes;
-                novaLinha.insertCell().textContent = formatarMoeda(parcelaTotalPaga);
+                novaLinha.insertCell().textContent = mes; // 1. Mês
+                novaLinha.insertCell().textContent = formatarMoeda(parcelaTotalPaga); // 2. Paga Total
                 
-                // Juros e Amortização Normal são os valores do mês
-                novaLinha.insertCell().textContent = formatarMoeda(jurosDoMes);
-                novaLinha.insertCell().textContent = formatarMoeda(amortizacaoNormal);
+                // Juros do Mês
+                novaLinha.insertCell().textContent = formatarMoeda(jurosDoMes); // 3. Juros
                 
-                // Custo Op. e Amort. Efetiva só aparecem se amortizado
-                novaLinha.insertCell().textContent = formatarMoeda(custoOpExibicao);
-                novaLinha.insertCell().textContent = formatarMoeda(amortizacaoEfetivaExibicao);
+                // Amortização Total (Normal + Extra Efetiva)
+                novaLinha.insertCell().textContent = formatarMoeda(amortizacaoTotalDoMes); // 4. Amort. Efetiva Total
                 
-                // Saldo é o resultado da operação
-                novaLinha.insertCell().textContent = formatarMoeda(saldoDevedorLoop);
+                // Saldo
+                novaLinha.insertCell().textContent = formatarMoeda(saldoDevedorLoop); // 5. Saldo Devedor
+
 
                 if (saldoDevedorLoop === 0) {
                      break; 
