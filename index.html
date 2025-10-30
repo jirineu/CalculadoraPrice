@@ -1,0 +1,235 @@
+<!DOCTYPE html>
+<html lang="pt-br">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Simulador de Financiamento - Tabela Price</title>
+
+    <style>
+        body {
+            font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+            margin: 20px;
+            background-color: #e9ecef;
+            color: #333;
+        }
+        h1 {
+            color: #004d99;
+            text-align: center;
+        }
+        #formulario {
+            background-color: #ffffff;
+            padding: 25px;
+            border-radius: 10px;
+            box-shadow: 0 6px 12px rgba(0, 0, 0, 0.1);
+            margin-bottom: 30px;
+            display: grid;
+            grid-template-columns: repeat(4, 1fr) auto;
+            gap: 20px;
+            align-items: end;
+        }
+        .campo {
+            display: flex;
+            flex-direction: column;
+        }
+        label {
+            margin-bottom: 5px;
+            font-weight: bold;
+            font-size: 0.9em;
+            color: #555;
+        }
+        input[type="number"] {
+            padding: 10px;
+            border: 1px solid #ced4da;
+            border-radius: 5px;
+            font-size: 1em;
+        }
+        button {
+            padding: 12px 20px;
+            background-color: #007bff;
+            color: white;
+            border: none;
+            border-radius: 5px;
+            cursor: pointer;
+            font-size: 1em;
+            font-weight: bold;
+            transition: background-color 0.3s;
+        }
+        button:hover {
+            background-color: #0056b3;
+        }
+        table {
+            width: 100%;
+            border-collapse: collapse;
+            background-color: #ffffff;
+            box-shadow: 0 6px 12px rgba(0, 0, 0, 0.05);
+            border-radius: 10px;
+            overflow: hidden;
+            margin-top: 20px;
+        }
+        th, td {
+            padding: 12px 15px;
+            text-align: right;
+            border-bottom: 1px solid #e0e0e0;
+        }
+        th {
+            background-color: #004d99;
+            color: white;
+            font-weight: 600;
+        }
+        tr:nth-child(even) {
+            background-color: #f8f9fa;
+        }
+        #resumo {
+            background-color: #e0f7fa;
+            padding: 15px;
+            border-radius: 8px;
+            margin-bottom: 20px;
+            border-left: 5px solid #00bcd4;
+            font-weight: bold;
+        }
+        .destaque {
+            color: #d9534f;
+        }
+    </style>
+</head>
+<body>
+
+    <h1>Simulador de Financiamento Imobiliário (Price)</h1>
+
+    <div id="formulario">
+        <div class="campo">
+            <label for="valorEmprestimo">Valor do Empréstimo (R$):</label>
+            <input type="number" id="valorEmprestimo" value="300000" min="1000" step="1000">
+        </div>
+
+        <div class="campo">
+            <label for="taxaAnual">Taxa de Juros Anual (%):</label>
+            <input type="number" id="taxaAnual" value="8" min="0.01" step="0.1">
+        </div>
+
+        <div class="campo">
+            <label for="parcelasTotais">Parcelas Totais (meses):</label>
+            <input type="number" id="parcelasTotais" value="360" min="12" step="12">
+        </div>
+
+        <div class="campo">
+            <label for="parcelaMensal">Valor Parcela Fixa (R$):</label>
+            <input type="number" id="parcelaMensal" value="" disabled placeholder="Calculado">
+        </div>
+        
+        <button onclick="calcularFinanciamento()">Simular Tabela Price</button>
+    </div>
+
+    <div id="resumo">
+        Parcela Mensal Fixa: <span id="resumoParcela" class="destaque">R$ 0,00</span> | 
+        Total Pago: <span id="resumoTotal" class="destaque">R$ 0,00</span> | 
+        Juros Totais: <span id="resumoJuros" class="destaque">R$ 0,00</span>
+    </div>
+
+    <table>
+        <thead>
+            <tr>
+                <th>Mês</th>
+                <th>Parcela (PMT)</th>
+                <th>Juros Pago</th>
+                <th>Amortização</th>
+                <th>Saldo Devedor</th>
+            </tr>
+        </thead>
+        <tbody id="corpo-tabela">
+            </tbody>
+    </table>
+
+    <script>
+        /**
+         * Formata um número para moeda brasileira (R$).
+         * @param {number} valor - O valor numérico.
+         * @returns {string} O valor formatado como R$ X.XXX,XX.
+         */
+        function formatarMoeda(valor) {
+            return valor.toLocaleString('pt-BR', { style: 'currency', currency: 'BRL' });
+        }
+
+        /**
+         * Calcula o valor da parcela fixa (PMT) usando a Tabela Price.
+         * @param {number} valor - Valor principal do empréstimo.
+         * @param {number} taxaMensal - Taxa de juros mensal (decimal).
+         * @param {number} n - Número total de parcelas.
+         * @returns {number} O valor da Parcela Mensal Fixa.
+         */
+        function calcularPMT(valor, taxaMensal, n) {
+            if (taxaMensal === 0) return valor / n;
+            const numerador = taxaMensal * Math.pow((1 + taxaMensal), n);
+            const denominador = Math.pow((1 + taxaMensal), n) - 1;
+            return valor * (numerador / denominador);
+        }
+
+        /**
+         * Função principal que lê os dados e gera a tabela de amortização.
+         */
+        function calcularFinanciamento() {
+            // 1. Ler e validar os valores do formulário
+            const valorEmprestimo = parseFloat(document.getElementById('valorEmprestimo').value);
+            const taxaAnual = parseFloat(document.getElementById('taxaAnual').value) / 100; // Decimal
+            const nParcelas = parseInt(document.getElementById('parcelasTotais').value);
+
+            if (isNaN(valorEmprestimo) || isNaN(taxaAnual) || isNaN(nParcelas) || valorEmprestimo <= 0 || nParcelas <= 0) {
+                alert('Por favor, insira valores válidos e positivos para a simulação.');
+                return;
+            }
+
+            // 2. Cálculo da Taxa Mensal Efetiva
+            const taxaMensal = Math.pow((1 + taxaAnual), (1/12)) - 1; 
+
+            // 3. Cálculo da Parcela Fixa (PMT)
+            const PMT = calcularPMT(valorEmprestimo, taxaMensal, nParcelas);
+            document.getElementById('parcelaMensal').value = PMT.toFixed(2); // Atualiza o campo desabilitado
+            document.getElementById('resumoParcela').textContent = formatarMoeda(PMT);
+
+            // 4. Geração da Tabela de Amortização
+            const corpoTabela = document.getElementById('corpo-tabela');
+            corpoTabela.innerHTML = ''; // Limpa resultados anteriores
+
+            let saldoDevedor = valorEmprestimo;
+            let jurosTotaisAcumulados = 0;
+
+            for (let mes = 1; mes <= nParcelas; mes++) {
+                // Cálculo 1: Juros do Mês (sobre o saldo devedor atual)
+                const jurosDoMes = saldoDevedor * taxaMensal;
+                
+                // Cálculo 2: Amortização
+                const amortizacao = PMT - jurosDoMes;
+                
+                // Cálculo 3: Novo Saldo Devedor
+                saldoDevedor -= amortizacao;
+                
+                // Acumulador de Juros
+                jurosTotaisAcumulados += jurosDoMes;
+
+                // Força o saldo devedor a ser zero na última parcela para evitar erros de arredondamento
+                if (mes === nParcelas) {
+                    saldoDevedor = 0; 
+                }
+
+                // 5. Criação da Linha da Tabela
+                const novaLinha = corpoTabela.insertRow();
+                
+                novaLinha.insertCell().textContent = mes;
+                novaLinha.insertCell().textContent = formatarMoeda(PMT);
+                novaLinha.insertCell().textContent = formatarMoeda(jurosDoMes);
+                novaLinha.insertCell().textContent = formatarMoeda(amortizacao);
+                novaLinha.insertCell().textContent = formatarMoeda(saldoDevedor);
+            }
+
+            // 6. Atualiza o resumo final
+            const totalPago = PMT * nParcelas;
+            document.getElementById('resumoTotal').textContent = formatarMoeda(totalPago);
+            document.getElementById('resumoJuros').textContent = formatarMoeda(jurosTotaisAcumulados);
+        }
+
+        // Executa o cálculo inicial ao carregar a página
+        document.addEventListener('DOMContentLoaded', calcularFinanciamento);
+    </script>
+
+</body>
+</html>
