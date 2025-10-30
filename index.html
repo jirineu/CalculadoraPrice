@@ -3,232 +3,956 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Simulador de Financiamento - Tabela Price</title>
+    <title>Simulador de Financiamento - Mobile</title>
 
     <style>
+        /* 1. Reset Essencial */
+        * {
+             box-sizing: border-box;
+             margin: 0; 
+             padding: 0;
+        }
+
+        /* --- Base e Container Principal --- */
         body {
             font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
-            margin: 20px;
-            background-color: #e9ecef;
+            background-color: #f7f7fa;
             color: #333;
+            padding-top: 55px; 
+            overflow-x: hidden; 
         }
-        h1 {
-            color: #004d99;
-            text-align: center;
+        
+        #main-content {
+            padding: 8px;
+            overflow-y: auto; 
+            transition: margin-left 0.3s;
         }
+
+        /* --- 1. HEADER E ÍCONE DO MENU SANDUÍCHE (FIXO) --- */
+        #header {
+            position: fixed;
+            top: 0;
+            left: 0;
+            width: 100%;
+            background-color: #004d99;
+            color: white;
+            z-index: 100; 
+            box-shadow: 0 2px 5px rgba(0, 0, 0, 0.2);
+            display: flex;
+            align-items: center;
+            height: 50px; 
+            padding: 0 5px;
+        }
+        #header h1 {
+            color: white;
+            margin: 0;
+            font-size: 1.1em; 
+            flex-grow: 1;
+            text-align: left;
+            padding-left: 10px;
+        }
+        
+        #menu-icon {
+            cursor: pointer;
+            font-size: 28px;
+            padding: 0 10px;
+            line-height: 1;
+        }
+
+        /* ------------------------------------------------------------------ */
+        /* --- 2. MENU LATERAL (Sidebar) --- */
+        /* ------------------------------------------------------------------ */
+        #sidebar-menu {
+            height: 100%; 
+            width: 85vw; 
+            max-width: 350px; 
+            position: fixed;
+            z-index: 90; 
+            top: 50px; 
+            left: -85vw; 
+            background-color: #ffffff;
+            overflow-x: hidden;
+            transition: left 0.3s;
+            padding-top: 10px;
+            box-shadow: 2px 0 5px rgba(0, 0, 0, 0.2);
+            border-right: 1px solid #ddd;
+        }
+        #sidebar-menu.open { left: 0; }
+        .menu-content-wrapper { padding: 10px; }
+        #btn-abrir-recorrente {
+            background-color: #17a2b8; 
+            margin-top: 10px;
+            width: 100%;
+            display: block;
+            padding: 12px;
+        }
+
+
+        /* --- 3. LAYOUT E COMPONENTES (Formulários) --- */
         #formulario {
             background-color: #ffffff;
-            padding: 25px;
-            border-radius: 10px;
-            box-shadow: 0 6px 12px rgba(0, 0, 0, 0.1);
-            margin-bottom: 30px;
+            padding: 15px; 
+            border-radius: 8px;
+            box-shadow: 0 2px 8px rgba(0, 0, 0, 0.1);
+            margin-bottom: 15px;
             display: grid;
-            grid-template-columns: repeat(4, 1fr) auto;
-            gap: 20px;
+            /* Grid com 2 colunas */
+            grid-template-columns: 1fr 1fr; 
+            gap: 10px;
             align-items: end;
         }
+        
         .campo {
             display: flex;
             flex-direction: column;
+            padding-bottom: 5px; 
         }
         label {
-            margin-bottom: 5px;
+            margin-bottom: 3px;
             font-weight: bold;
-            font-size: 0.9em;
+            font-size: 0.8em; 
             color: #555;
         }
-        input[type="number"] {
-            padding: 10px;
+        input, select, button {
+            padding: 8px; 
             border: 1px solid #ced4da;
-            border-radius: 5px;
-            font-size: 1em;
+            border-radius: 4px;
+            font-size: 0.9em;
+            max-width: 100%; 
         }
         button {
-            padding: 12px 20px;
             background-color: #007bff;
             color: white;
             border: none;
-            border-radius: 5px;
             cursor: pointer;
-            font-size: 1em;
             font-weight: bold;
             transition: background-color 0.3s;
+            margin-top: 15px; 
         }
-        button:hover {
-            background-color: #0056b3;
+        
+        /* Botões principais no formulário */
+        #btn-simular-principal { background-color: #007bff; margin-top: 15px; }
+        
+        /* Contêiner de botões de Amortização/Ponto de Partida */
+        .toggle-section {
+            /* Ocupa toda a largura, mas o botão dentro será menor */
+            grid-column: 1 / -1; 
+            margin-top: 10px;
+        }
+        
+        /* Estilo para botões de abrir/fechar configurações (ALTERADO) */
+        .toggle-button { 
+            margin-top: 0; 
+            background-color: #6c757d; 
+            /* Removido width: 100% e display: block */
+            /* DEIXA O BOTÃO MENOR E COMPACTO */
+            padding: 5px 10px; /* Padding reduzido */
+            font-size: 0.85em; /* Fonte reduzida */
+            display: inline-block;
+            width: auto;
+        }
+        
+        /* Cor de destaque para Amortização Única */
+        #btn-abrir-amortizacao-unica {
+             background-color: #28a745; 
+        }
+        
+        /* Altera o grid-column para os botões que precisam da largura total */
+        #formulario > button { grid-column: 1 / -1; margin-top: 5px; }
+
+        #edicao-saldo-campos {
+            display: none; 
+            grid-template-columns: 1fr 1fr; 
+            gap: 10px;
+            padding: 15px;
+            border: 1px solid #d9534f;
+            border-radius: 8px;
+            background-color: #fdf5f5;
+            margin-top: 10px;
+        }
+
+
+        /* ------------------------------------------------------------------ */
+        /* --- CONTAINER DE AMORTIZAÇÃO ÚNICA E RECORRENTE --- */
+        /* ------------------------------------------------------------------ */
+        #amortizacao-unica-container, #amortizacao-recorrente-container {
+            background-color: #f0f8ff;
+            border: 1px solid #007bff;
+            border-radius: 8px;
+            padding: 15px;
+            margin-bottom: 15px;
+            display: none; 
+        }
+        #amortizacao-unica-opcoes, #amortizacao-recorrente-opcoes {
+            display: grid;
+            grid-template-columns: 1fr 1fr; 
+            gap: 10px;
+        }
+
+        #amortizacao-recorrente-container {
+             background-color: #fff3e6;
+             border: 1px solid #ff9800;
+        }
+        .campo-variado { display: none; }
+
+
+        /* --- DASHBOARD E TABELA --- */
+        #dashboard-resumo {
+            background-color: #e6f7ff; 
+            border: 2px solid #007bff;
+            padding: 10px;
+            border-radius: 8px;
+            margin-bottom: 15px;
+            grid-template-columns: 1fr 1fr; 
+            gap: 10px;
+            display: grid;
+            text-align: center;
+            font-weight: bold;
+        }
+        .dashboard-item {
+            padding: 8px;
+            border-radius: 6px;
+            background-color: #ffffff;
+            box-shadow: 0 2px 5px rgba(0, 0, 0, 0.05);
+            font-size: 0.8em;
+        }
+        .dashboard-valor {
+            font-size: 1.3em; 
+            color: #d9534f;
+            display: block;
+            margin-top: 5px;
+        }
+        
+        /* ------------------------------------------------------------------ */
+        /* Tabela: Removido sticky TH */
+        /* ------------------------------------------------------------------ */
+        .tabela-wrapper {
+             overflow-x: auto; 
+             margin-bottom: 20px;
+             border-radius: 8px;
         }
         table {
+            min-width: 550px; 
             width: 100%;
             border-collapse: collapse;
             background-color: #ffffff;
-            box-shadow: 0 6px 12px rgba(0, 0, 0, 0.05);
-            border-radius: 10px;
-            overflow: hidden;
-            margin-top: 20px;
+            box-shadow: 0 4px 10px rgba(0, 0, 0, 0.05);
+            font-size: 0.75em; 
+            z-index: 1; 
         }
+        
         th, td {
-            padding: 12px 15px;
+            padding: 6px 4px; 
             text-align: right;
             border-bottom: 1px solid #e0e0e0;
         }
+        
         th {
             background-color: #004d99;
             color: white;
-            font-weight: 600;
         }
-        tr:nth-child(even) {
-            background-color: #f8f9fa;
+        
+        /* ---------------------------------------------------- */
+        /* MODAL DE ALERTA */
+        /* ---------------------------------------------------- */
+        #customAlert {
+            display: none;
+            position: fixed;
+            z-index: 1000;
+            left: 0;
+            top: 0;
+            width: 100%;
+            height: 100%;
+            background-color: rgba(0,0,0,0.4);
+            overflow: hidden; 
         }
-        #resumo {
-            background-color: #e0f7fa;
-            padding: 15px;
+
+        .alert-content {
+            background-color: #fefefe;
+            margin: 30vh auto; 
+            padding: 20px;
+            border: 1px solid #888;
             border-radius: 8px;
-            margin-bottom: 20px;
-            border-left: 5px solid #00bcd4;
-            font-weight: bold;
+            max-width: 90%; 
+            width: 300px; 
+            text-align: center;
+            box-shadow: 0 5px 15px rgba(0,0,0,0.3);
         }
-        .destaque {
-            color: #d9534f;
+        /* Mensagem discreta de economia */
+        #economia-parcelas-msg {
+            background-color: #e9ecef;
+            padding: 10px;
+            margin-bottom: 15px;
+            border-radius: 4px;
+            text-align: center;
+            font-size: 0.9em;
+            color: #333;
+            display: none; 
         }
     </style>
 </head>
-<body>
+<body onload="inicializarSimulador()">
 
-    <h1>Simulador de Financiamento Imobiliário (Price)</h1>
+    <div id="header">
+        <span id="menu-icon" onclick="toggleSidebar()">☰</span>
+        <h1>Simulador de Financiamento</h1>
+    </div>
 
-    <div id="formulario">
-        <div class="campo">
-            <label for="valorEmprestimo">Valor do Empréstimo (R$):</label>
-            <input type="number" id="valorEmprestimo" value="300000" min="1000" step="1000">
+    <aside id="sidebar-menu">
+        <span class="sidebar-close-btn" onclick="toggleSidebar()">×</span>
+        <div class="menu-content-wrapper">
+             <button id="btn-abrir-recorrente" onclick="toggleAmortizacao('recorrente', true); toggleSidebar();">
+                Config. "Mês a Mês" (Recorrente)
+            </button>
+             <p style="text-align: center; color: #555; margin-top: 20px; font-size: 0.9em;">
+                A Amortização Única é acessada pelo botão na tela principal.
+             </p>
         </div>
+    </aside>
 
-        <div class="campo">
-            <label for="taxaAnual">Taxa de Juros Anual (%):</label>
-            <input type="number" id="taxaAnual" value="8" min="0.01" step="0.1">
-        </div>
+    <div id="main-content">
 
-        <div class="campo">
-            <label for="parcelasTotais">Parcelas Totais (meses):</label>
-            <input type="number" id="parcelasTotais" value="360" min="12" step="12">
-        </div>
+        <div id="formulario">
+            <div class="campo">
+                <label for="valorEmprestimo">Valor Empréstimo (R$):</label>
+                <input type="number" id="valorEmprestimo" value="196000" min="1000" step="1000">
+            </div>
 
-        <div class="campo">
-            <label for="parcelaMensal">Valor Parcela Fixa (R$):</label>
-            <input type="number" id="parcelaMensal" value="" disabled placeholder="Calculado">
+            <div class="campo">
+                <label for="taxaAnual">Juros Anual (%):</label>
+                <input type="number" id="taxaAnual" value="6.5" min="0.01" step="0.1">
+            </div>
+
+            <div class="campo">
+                <label for="parcelasTotais">Parcelas Iniciais (meses):</label>
+                <input type="number" id="parcelasTotais" value="420" min="12" step="12">
+            </div>
+
+            <div class="campo">
+                <label for="parcelaMensal">Parcela Fixa (R$):</label>
+                <input type="number" id="parcelaMensal" value="" disabled placeholder="Calculado">
+            </div>
+
+            <button id="btn-simular-principal" onclick="calcularFinanciamento()">Simular / Atualizar</button>
+
+            
+            <div class="toggle-section">
+                <button onclick="toggleEdicaoSaldo()" id="toggleEdicaoButton" class="toggle-button">
+                    Alterar Ponto de Partida
+                </button>
+
+                <div id="edicao-saldo-campos">
+                    <div class="edicao-titulo" style="grid-column: 1 / -1; font-size: 0.9em; font-weight: bold; text-align: center; margin-bottom: 5px;">Iniciar Simulação a Partir de um Saldo Atual</div>
+                    
+                    <div class="campo">
+                        <label for="saldoDevedorAtual">Saldo Devedor Atual (R$):</label>
+                        <input type="number" id="saldoDevedorAtual" value="0" min="0" step="1000">
+                    </div>
+                    
+                    <div class="campo">
+                        <label for="parcelasRestantes">Parcelas Restantes (meses):</label>
+                        <input type="number" id="parcelasRestantes" value="0" min="0" step="12">
+                    </div>
+                </div>
+            </div>
+            
+            <div class="toggle-section">
+                <button id="btn-abrir-amortizacao-unica" onclick="toggleAmortizacao('unica', true)" class="toggle-button">
+                    Config. Amortização Única (1 Mês)
+                </button>
+            </div>
         </div>
         
-        <button onclick="calcularFinanciamento()">Simular Tabela Price</button>
+        <div id="amortizacao-unica-container">
+            <div class="menu-titulo">Configurações para Amortizar 1 Mês</div>
+
+            <div id="amortizacao-unica-opcoes">
+                
+                <div class="campo">
+                    <label for="tipoAmortizacaoUnica">Objetivo:</label>
+                    <select id="tipoAmortizacaoUnica">
+                        <option value="selecionar" selected disabled>-- Selecionar --</option>
+                        <option value="prazo">Reduzir Prazo</option>
+                        <option value="parcela">Reduzir Parcela</option>
+                    </select>
+                </div>
+                
+                <div class="campo">
+                    <label for="amortizacaoBrutaUnica">Valor Extra Bruto (R$):</label>
+                    <input type="number" id="amortizacaoBrutaUnica" value="0" min="0" step="100">
+                </div>
+                
+                <div class="campo">
+                    <label for="mesAmortizacaoUnica">Mês do Pagamento:</label>
+                    <input type="number" id="mesAmortizacaoUnica" value="1" min="1" step="1">
+                </div>
+                
+                <div class="campo">
+                    <label for="taxaAmortizacaoUnica">Custo Op. (%):</label>
+                    <input type="number" id="taxaAmortizacaoUnica" value="0.4" min="0" max="100" step="0.1">
+                </div>
+                
+                <button id="btn-aplicar-config-unica" onclick="setAmortizacaoParams('unica'); calcularFinanciamento();">
+                    Aplicar Configurações e Simular
+                </button>
+                <button id="btn-esconder-config-unica" onclick="toggleAmortizacao('unica', false)">
+                    Esconder Configurações
+                </button>
+            </div>
+        </div>
+        
+        <div id="amortizacao-recorrente-container">
+             <div class="menu-titulo">Configurações para Mês a Mês (Recorrente)</div>
+
+            <div id="amortizacao-recorrente-opcoes">
+                
+                <div class="campo">
+                    <label for="tipoAmortizacaoRecorrente">Objetivo:</label>
+                    <select id="tipoAmortizacaoRecorrente">
+                        <option value="selecionar" selected disabled>-- Selecionar --</option>
+                        <option value="prazo">Reduzir Prazo</option>
+                        <option value="parcela">Reduzir Parcela</option>
+                    </select>
+                </div>
+                
+                <div class="campo">
+                    <label for="repeticaoTipo">Frequência:</label>
+                    <select id="repeticaoTipo" onchange="alternarValoresRecorrentes()">
+                        <option value="mes_a_mes">Todo Mês (Fixo)</option>
+                        <option value="intercalado">Mês Sim / Mês Não</option>
+                        <option value="variado">Valores Alternados</option>
+                    </select>
+                </div>
+                
+                <div class="campo">
+                    <label for="amortizacaoBrutaRecorrente1">Valor Extra 1 (R$):</label>
+                    <input type="number" id="amortizacaoBrutaRecorrente1" value="0" min="0" step="100">
+                </div>
+
+                <div class="campo campo-variado" id="campo-valor-2">
+                    <label for="amortizacaoBrutaRecorrente2">Valor Extra 2 (R$):</label>
+                    <input type="number" id="amortizacaoBrutaRecorrente2" value="0" min="0" step="100">
+                </div>
+
+                <div class="campo">
+                    <label for="mesInicioRecorrente">Mês de Início:</label>
+                    <input type="number" id="mesInicioRecorrente" value="1" min="1" step="1">
+                </div>
+                
+                <div class="campo">
+                    <label for="taxaAmortizacaoRecorrente">Custo Op. (%):</label>
+                    <input type="number" id="taxaAmortizacaoRecorrente" value="0.4" min="0" max="100" step="0.1">
+                </div>
+
+                <button id="btn-aplicar-config-recorrente" onclick="setAmortizacaoParams('recorrente'); calcularFinanciamento();">
+                    Aplicar Configurações e Simular
+                </button>
+                <button id="btn-esconder-config-recorrente" onclick="toggleAmortizacao('recorrente', false)">
+                    Esconder Configurações
+                </button>
+            </div>
+        </div>
+
+
+        <div id="dashboard-resumo">
+            <div class="dashboard-item">
+                Nova Parcela (PMT)
+                <span class="dashboard-valor destaque-verde" id="resumoNovaParcela">R$ 0,00</span>
+            </div>
+            <div class="dashboard-item">
+                Novo Prazo Total
+                <span class="dashboard-valor destaque-verde" id="resumoPrazoFinal">0 meses</span>
+            </div>
+            <div class="dashboard-item">
+                Economia Total
+                <span class="dashboard-valor" id="resumoEconomia">R$ 0,00</span>
+            </div>
+            <div class="dashboard-item">
+                Redução
+                <span class="dashboard-valor destaque-azul" id="resumoReducao">0</span>
+            </div>
+        </div>
+        
+        <div id="economia-parcelas-msg">
+            </div>
+
+        <div class="tabela-wrapper">
+             <table>
+                <thead>
+                    <tr>
+                        <th>Mês</th>
+                        <th>Paga Total</th>
+                        <th>Juros</th>
+                        <th>Amort. Normal</th>
+                        <th>Custo Op.</th>
+                        <th>Amort. Efetiva</th>
+                        <th>Saldo Devedor</th>
+                    </tr>
+                </thead>
+                <tbody id="corpo-tabela">
+                    </tbody>
+            </table>
+        </div>
+
     </div>
 
-    <div id="resumo">
-        Parcela Mensal Fixa: <span id="resumoParcela" class="destaque">R$ 0,00</span> | 
-        Total Pago: <span id="resumoTotal" class="destaque">R$ 0,00</span> | 
-        Juros Totais: <span id="resumoJuros" class="destaque">R$ 0,00</span>
+    <div id="customAlert" onclick="this.style.display='none'">
+        <div class="alert-content">
+            <p>⚠ ATENÇÃO!</p>
+            <p>Mensagem de alerta...</p>
+            <p style="font-size: 0.8em; margin-top: 10px;">(Clique aqui ou na tela para fechar)</p>
+        </div>
     </div>
-
-    <table>
-        <thead>
-            <tr>
-                <th>Mês</th>
-                <th>Parcela (PMT)</th>
-                <th>Juros Pago</th>
-                <th>Amortização</th>
-                <th>Saldo Devedor</th>
-            </tr>
-        </thead>
-        <tbody id="corpo-tabela">
-            </tbody>
-    </table>
 
     <script>
-        /**
-         * Formata um número para moeda brasileira (R$).
-         * @param {number} valor - O valor numérico.
-         * @returns {string} O valor formatado como R$ X.XXX,XX.
-         */
-        function formatarMoeda(valor) {
-            return valor.toLocaleString('pt-BR', { style: 'currency', currency: 'BRL' });
+        
+        // Armazenamento global para os parâmetros de amortização ativa
+        let amortizacaoParams = {
+            tipo: 'nenhuma', // 'nenhuma', 'unica', 'recorrente'
+            valorBruto1: 0, 
+            valorBruto2: 0, 
+            mesInicio: 0, 
+            objetivo: '', // 'prazo' ou 'parcela'
+            taxaOp: 0.004, // 0.4% default (Lido da caixa de texto no início do setAmortizacaoParams)
+            repeticao: 'mes_a_mes' // apenas para 'recorrente'
+        };
+        
+        /** Exibe o modal de alerta sutil */
+        function showAlert(message) {
+            const modal = document.getElementById('customAlert');
+            modal.querySelector('.alert-content p:nth-child(2)').textContent = message;
+            modal.style.display = 'block';
+        }
+        
+        /** Alterna a abertura e fechamento do menu lateral sanduíche */
+        function toggleSidebar() {
+            const sidebar = document.getElementById('sidebar-menu');
+            sidebar.classList.toggle('open');
+            
+            // Lógica ajustada para garantir que o sidebar use VW na abertura/fechamento
+            if (sidebar.classList.contains('open')) {
+                 sidebar.style.left = '0';
+            } else {
+                 sidebar.style.left = '-85vw'; 
+            }
         }
 
-        /**
-         * Calcula o valor da parcela fixa (PMT) usando a Tabela Price.
-         * @param {number} valor - Valor principal do empréstimo.
-         * @param {number} taxaMensal - Taxa de juros mensal (decimal).
-         * @param {number} n - Número total de parcelas.
-         * @returns {number} O valor da Parcela Mensal Fixa.
-         */
+        /** Alterna a visualização dos containers de amortização, garantindo que apenas um esteja visível. */
+        function toggleAmortizacao(tipo, mostrar) {
+            const unicaContainer = document.getElementById('amortizacao-unica-container');
+            const recorrenteContainer = document.getElementById('amortizacao-recorrente-container');
+            
+            if (mostrar) {
+                // Esconde o outro tipo e limpa seus parâmetros
+                if (tipo === 'unica') {
+                    recorrenteContainer.style.display = 'none';
+                    amortizacaoParams.tipo = 'nenhuma';
+                    unicaContainer.style.display = 'block';
+                    unicaContainer.scrollIntoView({ behavior: 'smooth' });
+                } else if (tipo === 'recorrente') {
+                    unicaContainer.style.display = 'none';
+                    amortizacaoParams.tipo = 'nenhuma';
+                    recorrenteContainer.style.display = 'block';
+                    recorrenteContainer.scrollIntoView({ behavior: 'smooth' });
+                }
+            } else {
+                // Esconde o container atual e limpa seus parâmetros
+                if (tipo === 'unica') {
+                    unicaContainer.style.display = 'none';
+                } else if (tipo === 'recorrente') {
+                    recorrenteContainer.style.display = 'none';
+                }
+                amortizacaoParams.tipo = 'nenhuma';
+                document.getElementById('main-content').scrollIntoView({ behavior: 'smooth' });
+                calcularFinanciamento(); // Recalcula sem amortização
+            }
+        }
+        
+        /** Seta os parâmetros de amortização (Única ou Recorrente) no objeto global */
+        function setAmortizacaoParams(tipo) {
+            let valor1, valor2, mes, objetivo, taxaElement;
+            
+            if (tipo === 'unica') {
+                valor1 = parseFloat(document.getElementById('amortizacaoBrutaUnica').value) || 0;
+                objetivo = document.getElementById('tipoAmortizacaoUnica').value;
+                mes = parseInt(document.getElementById('mesAmortizacaoUnica').value) || 1;
+                taxaElement = document.getElementById('taxaAmortizacaoUnica');
+                valor2 = 0;
+                
+                if (objetivo === 'selecionar' && valor1 > 0.01) {
+                    showAlert("Selecione o Objetivo da Amortização (Reduzir Prazo ou Parcela) para Amortizar 1 Mês.");
+                    amortizacaoParams.tipo = 'nenhuma';
+                    return;
+                }
+                
+                amortizacaoParams.repeticao = '';
+
+            } else if (tipo === 'recorrente') {
+                valor1 = parseFloat(document.getElementById('amortizacaoBrutaRecorrente1').value) || 0;
+                objetivo = document.getElementById('tipoAmortizacaoRecorrente').value;
+                mes = parseInt(document.getElementById('mesInicioRecorrente').value) || 1;
+                taxaElement = document.getElementById('taxaAmortizacaoRecorrente');
+                amortizacaoParams.repeticao = document.getElementById('repeticaoTipo').value;
+                
+                if (amortizacaoParams.repeticao === 'variado') {
+                    valor2 = parseFloat(document.getElementById('amortizacaoBrutaRecorrente2').value) || 0;
+                } else {
+                    valor2 = 0;
+                }
+                
+                 if (objetivo === 'selecionar' && (valor1 > 0.01 || valor2 > 0.01)) {
+                    showAlert("Selecione o Objetivo da Amortização (Reduzir Prazo ou Parcela) para Mês a Mês.");
+                    amortizacaoParams.tipo = 'nenhuma';
+                    return;
+                }
+            }
+
+            if (valor1 < 0.01 && valor2 < 0.01) {
+                amortizacaoParams.tipo = 'nenhuma';
+                return;
+            }
+            
+            amortizacaoParams.tipo = tipo;
+            amortizacaoParams.valorBruto1 = valor1;
+            amortizacaoParams.valorBruto2 = valor2;
+            amortizacaoParams.mesInicio = mes;
+            amortizacaoParams.objetivo = objetivo;
+            amortizacaoParams.taxaOp = parseFloat(taxaElement.value) / 100; // Lê e converte o custo operacional
+        }
+
+
+        /** Função de inicialização ao carregar a página */
+        function inicializarSimulador() {
+            // LER DADOS DO FINANCIAMENTO BASE (para PMT inicial)
+            const valorEmprestimoInicial = parseFloat(document.getElementById('valorEmprestimo').value);
+            const taxaAnual = parseFloat(document.getElementById('taxaAnual').value) / 100;
+            const parcelasTotaisIniciais = parseInt(document.getElementById('parcelasTotais').value);
+            const taxaMensal = Math.pow((1 + taxaAnual), (1/12)) - 1; 
+            const pmtInicial = calcularPMT(valorEmprestimoInicial, taxaMensal, parcelasTotaisIniciais);
+
+            // Popula os campos de amortização extra com a PMT inicial (para facilitar a simulação)
+            document.getElementById('amortizacaoBrutaUnica').value = pmtInicial.toFixed(2);
+            document.getElementById('amortizacaoBrutaRecorrente1').value = pmtInicial.toFixed(2);
+            document.getElementById('amortizacaoBrutaRecorrente2').value = (pmtInicial / 2).toFixed(2);
+            
+            alternarValoresRecorrentes(); // Inicializa os campos recorrentes
+            calcularFinanciamento();
+        }
+        
+         /** Função para mostrar/esconder a seção de edição de saldo e resetar valores */
+        function toggleEdicaoSaldo() {
+            const campos = document.getElementById('edicao-saldo-campos');
+            const botao = document.getElementById('toggleEdicaoButton');
+            const sdAtual = document.getElementById('saldoDevedorAtual');
+            const parcelasRestantes = document.getElementById('parcelasRestantes');
+            
+            if (campos.style.display === 'grid') {
+                // RESETANDO VALORES E ESCONDENDO
+                sdAtual.value = "0";
+                parcelasRestantes.value = "0";
+                campos.style.display = 'none';
+                botao.textContent = 'Alterar Ponto de Partida';
+                
+                calcularFinanciamento(); 
+
+            } else {
+                // EXIBINDO
+                campos.style.display = 'grid';
+                botao.textContent = 'Esconder Ponto de Partida';
+            }
+        }
+        
+        /** Alterna os campos de valor Extra 2 no Recorrente */
+        function alternarValoresRecorrentes() {
+            const repeticaoTipo = document.getElementById('repeticaoTipo').value;
+            const campoValor2 = document.getElementById('campo-valor-2');
+            
+            // O campo Valor 2 só aparece se o tipo for 'variado'
+            if (repeticaoTipo === 'variado') {
+                campoValor2.style.display = 'flex';
+            } else {
+                campoValor2.style.display = 'none';
+            }
+        }
+
+
+        /** Função de formatação de moeda (R$) */
+        function formatarMoeda(valor) {
+            if (valor < 0 && Math.abs(valor) < 0.01) {
+                valor = 0;
+            }
+            return parseFloat(valor.toFixed(2)).toLocaleString('pt-BR', { style: 'currency', currency: 'BRL' });
+        }
+
+        /** Calcula o valor da parcela fixa (PMT) usando a Tabela Price. */
         function calcularPMT(valor, taxaMensal, n) {
+            if (n <= 0) return 0;
             if (taxaMensal === 0) return valor / n;
             const numerador = taxaMensal * Math.pow((1 + taxaMensal), n);
             const denominador = Math.pow((1 + taxaMensal), n) - 1;
             return valor * (numerador / denominador);
         }
+        
+        /** Calcula o valor total pago se o financiamento continuasse sem amortização. */
+        function calcularTotalOriginal(saldoInicial, taxaMensal, nParcelas) {
+            if (saldoInicial <= 0 || nParcelas <= 0) return { custo: 0, nParcelas: 0 };
+            
+            let saldoDevedor = saldoInicial;
+            const PMT = calcularPMT(saldoInicial, taxaMensal, nParcelas);
+            let custoTotal = 0;
+            let parcelasPagas = 0;
 
-        /**
-         * Função principal que lê os dados e gera a tabela de amortização.
-         */
-        function calcularFinanciamento() {
-            // 1. Ler e validar os valores do formulário
-            const valorEmprestimo = parseFloat(document.getElementById('valorEmprestimo').value);
-            const taxaAnual = parseFloat(document.getElementById('taxaAnual').value) / 100; // Decimal
-            const nParcelas = parseInt(document.getElementById('parcelasTotais').value);
+            const limiteSeguranca = nParcelas + 120; 
 
-            if (isNaN(valorEmprestimo) || isNaN(taxaAnual) || isNaN(nParcelas) || valorEmprestimo <= 0 || nParcelas <= 0) {
-                alert('Por favor, insira valores válidos e positivos para a simulação.');
-                return;
-            }
-
-            // 2. Cálculo da Taxa Mensal Efetiva
-            const taxaMensal = Math.pow((1 + taxaAnual), (1/12)) - 1; 
-
-            // 3. Cálculo da Parcela Fixa (PMT)
-            const PMT = calcularPMT(valorEmprestimo, taxaMensal, nParcelas);
-            document.getElementById('parcelaMensal').value = PMT.toFixed(2); // Atualiza o campo desabilitado
-            document.getElementById('resumoParcela').textContent = formatarMoeda(PMT);
-
-            // 4. Geração da Tabela de Amortização
-            const corpoTabela = document.getElementById('corpo-tabela');
-            corpoTabela.innerHTML = ''; // Limpa resultados anteriores
-
-            let saldoDevedor = valorEmprestimo;
-            let jurosTotaisAcumulados = 0;
-
-            for (let mes = 1; mes <= nParcelas; mes++) {
-                // Cálculo 1: Juros do Mês (sobre o saldo devedor atual)
+            for (let mes = 1; mes <= limiteSeguranca && saldoDevedor > 0.01; mes++) {
                 const jurosDoMes = saldoDevedor * taxaMensal;
-                
-                // Cálculo 2: Amortização
-                const amortizacao = PMT - jurosDoMes;
-                
-                // Cálculo 3: Novo Saldo Devedor
-                saldoDevedor -= amortizacao;
-                
-                // Acumulador de Juros
-                jurosTotaisAcumulados += jurosDoMes;
+                let amortizacaoNormal = PMT - jurosDoMes;
 
-                // Força o saldo devedor a ser zero na última parcela para evitar erros de arredondamento
-                if (mes === nParcelas) {
-                    saldoDevedor = 0; 
+                if (saldoDevedor < amortizacaoNormal) {
+                     amortizacaoNormal = saldoDevedor;
+                     custoTotal += jurosDoMes + amortizacaoNormal;
+                     saldoDevedor = 0;
+                     parcelasPagas = mes;
+                     break; 
                 }
-
-                // 5. Criação da Linha da Tabela
-                const novaLinha = corpoTabela.insertRow();
                 
-                novaLinha.insertCell().textContent = mes;
-                novaLinha.insertCell().textContent = formatarMoeda(PMT);
-                novaLinha.insertCell().textContent = formatarMoeda(jurosDoMes);
-                novaLinha.insertCell().textContent = formatarMoeda(amortizacao);
-                novaLinha.insertCell().textContent = formatarMoeda(saldoDevedor);
+                custoTotal += PMT;
+                saldoDevedor -= amortizacaoNormal;
+                parcelasPagas = mes;
             }
-
-            // 6. Atualiza o resumo final
-            const totalPago = PMT * nParcelas;
-            document.getElementById('resumoTotal').textContent = formatarMoeda(totalPago);
-            document.getElementById('resumoJuros').textContent = formatarMoeda(jurosTotaisAcumulados);
+            
+            return { custo: custoTotal, nParcelas: parcelasPagas };
         }
 
-        // Executa o cálculo inicial ao carregar a página
-        document.addEventListener('DOMContentLoaded', calcularFinanciamento);
+
+        /** Função principal que lê os dados e gera a tabela de amortização. */
+        function calcularFinanciamento() {
+            
+            // 1. LER DADOS BASE
+            const taxaAnual = parseFloat(document.getElementById('taxaAnual').value) / 100;
+            const taxaMensal = Math.pow((1 + taxaAnual), (1/12)) - 1; 
+            const valorEmprestimoInicial = parseFloat(document.getElementById('valorEmprestimo').value);
+            const parcelasTotaisIniciais = parseInt(document.getElementById('parcelasTotais').value);
+            
+            // 2. DETERMINAR PONTO DE PARTIDA (Saldo Devedor e Prazo)
+            let saldoDevedorPartida = parseFloat(document.getElementById('saldoDevedorAtual').value);
+            let nParcelasPartida = parseInt(document.getElementById('parcelasRestantes').value);
+
+            const camposEdicaoVisiveis = document.getElementById('edicao-saldo-campos').style.display === 'grid';
+            const usandoSimulacaoInicial = (saldoDevedorPartida <= 0 || isNaN(saldoDevedorPartida) || saldoDevedorPartida === 0) || (nParcelasPartida <= 0 || isNaN(nParcelasPartida) || nParcelasPartida === 0);
+
+            if (camposEdicaoVisiveis && usandoSimulacaoInicial) {
+                 showAlert("Preencha o Saldo Devedor Atual e as Parcelas Restantes com valores maiores que zero para iniciar a simulação a partir de um ponto específico.");
+                 return;
+            }
+
+            if (usandoSimulacaoInicial) {
+                 saldoDevedorPartida = valorEmprestimoInicial;
+                 nParcelasPartida = parcelasTotaisIniciais;
+            } 
+            
+            if (saldoDevedorPartida <= 0 || nParcelasPartida <= 0) {
+                showAlert("Erro de cálculo. Verifique os valores do Empréstimo Base. Valores devem ser positivos.");
+                return;
+            }
+            
+            let saldoDevedorLoop = saldoDevedorPartida;
+            let nParcelasFinal = nParcelasPartida;
+
+
+            // 3. CALCULA O PMT ORIGINAL E O CUSTO TOTAL ORIGINAL
+            let PMT_original = calcularPMT(saldoDevedorPartida, taxaMensal, nParcelasPartida); 
+            document.getElementById('parcelaMensal').value = PMT_original.toFixed(2);
+            
+            const refOriginal = calcularTotalOriginal(saldoDevedorPartida, taxaMensal, nParcelasPartida);
+            const custoTotalOriginal = refOriginal.custo;
+            const parcelasTotaisOriginais = refOriginal.nParcelas;
+            
+            
+            // 4. LER DADOS DE AMORTIZAÇÃO ATIVA
+            const { 
+                tipo: tipoSimulacao, 
+                valorBruto1: amortizacaoBruta1, 
+                valorBruto2: amortizacaoBruta2,
+                mesInicio: mesInicioAmortizacao, 
+                objetivo: tipoAmortizacao, 
+                taxaOp: taxaAmortizacaoPercentual,
+                repeticao: repeticaoTipo
+            } = amortizacaoParams;
+
+            // Variáveis de Controle do Loop
+            const corpoTabela = document.getElementById('corpo-tabela');
+            corpoTabela.innerHTML = ''; 
+            let PMT_atual = PMT_original; 
+            let custoTotalFinal = 0; 
+            let amortizacaoAplicadaNaUnica = false;
+            
+            const limiteSeguranca = nParcelasPartida + 120;
+
+
+            // 5. LOOP DE GERAÇÃO DA TABELA COMPLETA
+            for (let mes = 1; mes <= limiteSeguranca && saldoDevedorLoop > 0.01; mes++) {
+                
+                let PMT_do_mes = PMT_atual;
+                let jurosDoMes = saldoDevedorLoop * taxaMensal;
+                let amortizacaoNormal = PMT_do_mes - jurosDoMes;
+
+                let amortizacaoBrutaMes = 0;
+                let custoOpExibicao = 0;
+                let amortizacaoEfetivaExibicao = 0;
+                let parcelaTotalPaga = PMT_do_mes;
+                let linhaDestaque = false;
+                
+                
+                // --- Determinar Amortização Extra para o Mês Atual ---
+                if (tipoSimulacao === 'unica' && mes === mesInicioAmortizacao && !amortizacaoAplicadaNaUnica) {
+                    amortizacaoBrutaMes = amortizacaoBruta1;
+                    amortizacaoAplicadaNaUnica = true; 
+                    
+                } else if (tipoSimulacao === 'recorrente' && mes >= mesInicioAmortizacao) {
+                    
+                    if (repeticaoTipo === 'mes_a_mes') {
+                        amortizacaoBrutaMes = amortizacaoBruta1;
+                    } else if (repeticaoTipo === 'intercalado' && (mes - mesInicioAmortizacao) % 2 === 0) { 
+                         amortizacaoBrutaMes = amortizacaoBruta1;
+                    } else if (repeticaoTipo === 'variado') {
+                         if ((mes - mesInicioAmortizacao) % 2 === 0) { 
+                              amortizacaoBrutaMes = amortizacaoBruta1;
+                         } else { 
+                              amortizacaoBrutaMes = amortizacaoBruta2;
+                         }
+                    }
+                }
+                
+                
+                // --- Aplica o Efeito da Amortização ---
+                if (amortizacaoBrutaMes > 0.01) {
+                    const custoOperacionalMes = amortizacaoBrutaMes * taxaAmortizacaoPercentual;
+                    let amortizacaoEfetivaMes = amortizacaoBrutaMes - custoOperacionalMes;
+                    
+                    // 1. Saldo após pagamento da PMT normal do mês M
+                    let sd_apos_pmt = saldoDevedorLoop - amortizacaoNormal;
+                    
+                    // 2. Aplica a amortização efetiva
+                    let novo_sd = sd_apos_pmt - amortizacaoEfetivaMes;
+                    if (novo_sd < 0) {
+                        amortizacaoEfetivaMes += novo_sd; 
+                        novo_sd = 0; 
+                    }
+                    
+                    // 3. Recálculo da PMT (se for para PARCELA)
+                    if (tipoAmortizacao === 'parcela') {
+                        const n_restante = nParcelasPartida - mes; 
+                        if (n_restante > 0) {
+                            PMT_atual = calcularPMT(novo_sd, taxaMensal, n_restante);
+                        } else {
+                            PMT_atual = 0; 
+                        }
+                    } 
+                    
+                    // 4. Acumula os custos e atualiza o saldo
+                    custoTotalFinal += (PMT_do_mes + amortizacaoBrutaMes); 
+                    saldoDevedorLoop = novo_sd;
+                    
+                    // 5. Prepara os valores de exibição
+                    custoOpExibicao = custoOperacionalMes;
+                    amortizacaoEfetivaExibicao = amortizacaoEfetivaMes;
+                    parcelaTotalPaga = PMT_do_mes + amortizacaoBrutaMes;
+                    linhaDestaque = true;
+                    
+                } else {
+                    // Mês sem amortização extra
+                    parcelaTotalPaga = PMT_do_mes;
+                    custoTotalFinal += PMT_do_mes; 
+                }
+                
+                
+                // --- Conclusão do Mês (Para todos os casos) ---
+
+                // Se o saldo restante for menor que a amortização normal
+                if (amortizacaoBrutaMes < 0.01 && saldoDevedorLoop < amortizacaoNormal) {
+                     amortizacaoNormal = saldoDevedorLoop;
+                     PMT_do_mes = jurosDoMes + amortizacaoNormal;
+                     parcelaTotalPaga = PMT_do_mes;
+                     nParcelasFinal = mes;
+                }
+                
+                // Se não houve amortização extra (amortizaçãoNormal ainda não foi aplicada ao SD)
+                if (amortizacaoBrutaMes < 0.01 && !linhaDestaque) {
+                     saldoDevedorLoop -= amortizacaoNormal;
+                }
+
+                // Força saldo zero
+                if (saldoDevedorLoop < 0.01) {
+                    saldoDevedorLoop = 0;
+                    if(nParcelasFinal === nParcelasPartida) nParcelasFinal = mes;
+                }
+
+
+                // 6. Geração da Linha da Tabela
+                const novaLinha = corpoTabela.insertRow();
+                if (linhaDestaque) novaLinha.classList.add('amortizacao-extra-mes');
+
+                novaLinha.insertCell().textContent = mes;
+                novaLinha.insertCell().textContent = formatarMoeda(parcelaTotalPaga);
+                
+                // Juros e Amortização Normal são os valores do mês
+                novaLinha.insertCell().textContent = formatarMoeda(jurosDoMes);
+                novaLinha.insertCell().textContent = formatarMoeda(amortizacaoNormal);
+                
+                // Custo Op. e Amort. Efetiva só aparecem se amortizado
+                novaLinha.insertCell().textContent = formatarMoeda(custoOpExibicao);
+                novaLinha.insertCell().textContent = formatarMoeda(amortizacaoEfetivaExibicao);
+                
+                // Saldo é o resultado da operação
+                novaLinha.insertCell().textContent = formatarMoeda(saldoDevedorLoop);
+
+                if (saldoDevedorLoop === 0) {
+                     break; 
+                }
+            }
+            
+            // 7. CÁLCULO FINAL E ATUALIZAÇÃO DO DASHBOARD
+            
+            const economiaTotal = custoTotalOriginal - custoTotalFinal;
+            let parcela_final_display = PMT_atual;
+            let reducao_valor_display = 0;
+            let novo_prazo_display = nParcelasFinal;
+            let reducao_parcelas_display = parcelasTotaisOriginais - nParcelasFinal;
+
+            
+            // Atualiza o Redução Destaque
+            const isAmortizando = tipoSimulacao !== 'nenhuma' && (amortizacaoBruta1 > 0 || amortizacaoBruta2 > 0);
+            
+            if (tipoAmortizacao === 'parcela' && isAmortizando) {
+                reducao_valor_display = PMT_original - PMT_atual;
+                if (reducao_valor_display < 0.01) reducao_valor_display = 0;
+                
+                document.getElementById('resumoReducao').textContent = formatarMoeda(reducao_valor_display);
+                
+            } else if (tipoAmortizacao === 'prazo' && isAmortizando) {
+                 if (reducao_parcelas_display < 0) reducao_parcelas_display = 0;
+                 document.getElementById('resumoReducao').textContent = `${reducao_parcelas_display} Parcelas`;
+            } else {
+                 document.getElementById('resumoReducao').textContent = 'Nenhuma';
+            }
+
+
+            // Atualiza os valores do Dashboard
+            document.getElementById('resumoNovaParcela').textContent = formatarMoeda(parcela_final_display);
+            document.getElementById('resumoPrazoFinal').textContent = `${novo_prazo_display} meses (Original: ${parcelasTotaisOriginais})`;
+            document.getElementById('resumoEconomia').textContent = formatarMoeda(economiaTotal);
+            
+            // 8. ATUALIZAÇÃO DA MENSAGEM DISCRETA DE PARCELAS
+            const msgElement = document.getElementById('economia-parcelas-msg');
+            
+            if (economiaTotal > 0.01 && reducao_parcelas_display > 0) {
+                 msgElement.textContent = `A simulação resultou em uma economia de ${reducao_parcelas_display} parcelas em relação ao plano original de ${parcelasTotaisOriginais} meses.`;
+                 msgElement.style.display = 'block';
+            } else {
+                 msgElement.style.display = 'none';
+            }
+        }
     </script>
 
 </body>
